@@ -2,6 +2,10 @@ TypeScript Continuous Integration Starter Project
 =========
 *Utilizes Require.JS for AMD loading*
 
+This is just a barebones project CI project for TypeScript development. This should be compatible with most CI servers
+such as Jenkins/Hudson given that they can use gradle and node.
+
+
 ### Requirements for building
  * gradle 1.0+
  * node and the TypeScript node module
