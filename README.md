@@ -7,6 +7,9 @@ TypeScript Continuous Integration Starter Project
  * node and the TypeScript node module
  * To get install TypeScript on node: *npm install -g typescript*
 
+### Getting started
+ * Run: gradle build
+
 ### Changing build to use a different starting source file
  * Open *build.gradle*
  * Change *"mainModule"* on line #4 from "Sample" to the name of your new source file
