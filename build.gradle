@@ -1,0 +1,63 @@
+defaultTasks "minify"
+
+// Change this to name of your starting script file in the src dir.
+def mainModule = "Sample"
+
+task removeTarget(type:Delete) {
+	delete "target/"
+}
+
+task createTarget(type:Exec, dependsOn:"removeTarget") {
+	commandLine "mkdir", "target"
+}
+
+task clean(dependsOn:"createTarget") {
+	FileTree tree = fileTree('src').include('**/*.js')
+	tree.each { File file -> delete file }
+}
+
+task build(type: Exec, dependsOn:"clean") {
+	def tsc = "tsc"
+	workingDir "src/"
+
+	if (System.properties['os.name'].toLowerCase().contains('mac')) {
+		tsc = "/usr/local/bin/tsc"
+	}
+
+	commandLine tsc, "--module", "amd", mainModule + ".ts", "--target", "ES5"
+}
+
+task composite(type: Exec, dependsOn:["build", "jasmine"]) {
+	workingDir "./"
+	commandLine "node", "tools/r.js", "-o", "name=" + mainModule, "out=target/" + mainModule + ".js", "baseUrl=src/", "optimize=none"
+}
+
+task minify(type: Exec, dependsOn:["composite"]) {
+	workingDir "./"
+	commandLine "node", "tools/r.js", "-o", "name=" + mainModule, "out=target/" + mainModule + ".min.js", "baseUrl=src/"
+}
+
+task prepForJUnit () {
+	doLast {
+		File outputDir = file("./target/junit")
+		outputDir.mkdirs()
+	}
+}
+
+task jasmine(type: Exec, dependsOn:["prepForJUnit", "build"], description: "Runs Jasmine through PhantomJS"){
+	def os = System.getProperty("os.name").toLowerCase();
+	def phantomjs = "phantomjs"
+	
+	if (os.contains("windows")) {
+		phantomjs = "./tools/phantomjs/win/" + phantomjs + ".exe"
+	} else if (os.contains("mac os")) {
+		phantomjs = "./tools/phantomjs/mac/" + phantomjs
+	} else {
+		phantomjs = "./tools/phantomjs/linux/bin/" + phantomjs 
+	}
+	
+	phantomjs = file(phantomjs).absolutePath
+
+	//commandLine = [phantomjs, "./tools/phantomjs/run_jasmine_test.coffee", "index.html"]
+	commandLine = [phantomjs, "./tools/phantomjs/phantomjs-testrunner.js", file("index.html").absolutePath]
+}
